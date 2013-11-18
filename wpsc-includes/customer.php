@@ -139,7 +139,6 @@ function _wpsc_validate_customer_cookie() {
 	// if the cookie is invalid, just delete it and a new user will be generated
 	// later
 	if ( ! $valid ) {
-		unset( $_COOKIE[WPSC_CUSTOMER_COOKIE] );
 		_wpsc_set_customer_cookie( '', time() - 3600 );
 	}
 }
