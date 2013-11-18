@@ -125,7 +125,7 @@ function _wpsc_validate_customer_cookie() {
 
 	$valid = false;
 
-	if ( $hmac == $hash && !empty( $id ) && is_numeric($id)) {
+	if ( $hmac == $hash && !empty( $id ) && is_numeric( $id ) ) {
 		// check to be sure the user still exists, could have been purged
 		$id = intval( $id );
 		$wp_user = get_user_by( 'id', $id );
