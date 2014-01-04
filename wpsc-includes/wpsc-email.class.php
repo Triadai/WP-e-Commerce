@@ -9,6 +9,7 @@ class WPSC_Email {
 	public $plain_content = '';
 	public $html_content  = '';
 	public $template_tag  = '';
+	public $sent          = null;
 
 	// Publically settable via specific setter functions / API calls.
 	private $to           = array(); // @TODO
@@ -122,8 +123,12 @@ class WPSC_Email {
 		if ( ! $this->can_send() ) {
 			return false;
 		}
+
+		// Set the status to false to indicate we've tried to send the mail.
+		$this->sent = false;
 		$this->prepare();
 
+		// Allow plugins to interfere.
 		do_action( 'wpsc_email_before_send', $this );
 
 		add_action( 'phpmailer_init', array( $this, '_action_phpmailer_init_multipart' ), 10, 1 );
@@ -136,8 +141,13 @@ class WPSC_Email {
 		remove_filter( 'wp_mail_content_type', array( $this, 'get_content_type' ) );
 		remove_action( 'phpmailer_init', array( $this, '_action_phpmailer_init_multipart' ), 10, 1 );
 
+		// Update the status to show the results of sending the email
+		$this->sent = $email_sent;
+
+		// Allow plugins to interfere.
 		do_action( 'wpsc_email_after_send', $this );
 
+		return $email_sent;
 	}
 
 	public function _action_phpmailer_init_multipart( $phpmailer ) {
@@ -164,7 +174,6 @@ class WPSC_Email {
 		}
 		$this->$type = array_merge( $this->$type, $addresses );
 		return $this->$type = array_unique( $this->$type );
-
 	}
 
 	/**
@@ -197,13 +206,12 @@ class WPSC_Email {
 		if ( count($this->to) < 1 ) {
 			return false;
 		}
-
 		// Can't send unless we have content.
 		if ( empty( $this->plain_content ) && empty( $this->html_content ) ) {
 			return false;
 		}
-
 		return true;
+
 	}
 
 	/**
@@ -218,8 +226,9 @@ class WPSC_Email {
 		$this->content_type = apply_filter( 'wpsc_email_content_type', $content_type, $this );
 	}
 
+	// FIXME - will need to be better
 	private function html_to_plain_text() {
-		// @TODO
+		$this->plain_content = strip_tags( $this->html_content );
 	}
 
 }
