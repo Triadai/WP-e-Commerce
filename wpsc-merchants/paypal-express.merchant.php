@@ -1033,5 +1033,6 @@ function paypal_deformatNVP( $nvpstr ) {
 	return $nvpArray;
 }
 
-if ( in_array( 'wpsc_merchant_paypal_express', get_option( 'custom_gateway_options' ) ) )
+$custom_gateway_options = get_option( 'custom_gateway_options' );
+if ( $custom_gateway_options && in_array( 'wpsc_merchant_paypal_express', $custom_gateway_options ) )
 	add_action('init', 'paypal_processingfunctions');
