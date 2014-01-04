@@ -228,15 +228,26 @@ class WPSC_Email_TestCase extends WP_UnitTestCase {
 	/**
 	 * @TODO Test that the content type gets set correctly.
 	 */
-	public function test_content_type_generation() {
+	public function test_content_type_generation_html() {
+		$this->email->html_content = '<html><body>This is a test.</body></html>';
+		$this->email->add_to( 'joe@example.com' );
+		$result = $this->email->send();
+		$this->assertEquals( 'multipart/alternative', $this->email->content_type );
+		$this->assertContains( 'Content-Type: multipart/alternative', $this->email->headers );
+	}
 
+	public function test_content_type_generation_plain() {
+		$this->email->plain_content = 'This is a test.';
+		$this->email->add_to( 'joe@example.com' );
+		$result = $this->email->send();
+		$this->assertEquals( 'text/plain', $this->email->content_type );
+		$this->assertContains( 'Content-Type: text/plain', $this->email->headers );
 	}
 
 	/**
 	 * Test that the plain text content gets generated correctly.
 	 */
 	public function test_auto_plain_text_generation() {
-
 		$this->email->html_content = '<html><body>This is a test.</body></html>';
 		$this->email->add_to( 'joe@example.com' );
 		$result = $this->email->send();
