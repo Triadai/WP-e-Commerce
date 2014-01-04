@@ -45,7 +45,7 @@ class WPSC_Email {
 		}
 		$trace = debug_backtrace();
         trigger_error(
-            'Undefined property: ' . $name .
+            'Undefined property: ' . $key .
             ' in ' . $trace[0]['file'] .
             ' on line ' . $trace[0]['line'],
             E_USER_NOTICE
@@ -152,7 +152,9 @@ class WPSC_Email {
 
 	public function _action_phpmailer_init_multipart( $phpmailer ) {
 		// FIXME - Only if we have both?
-		$phpmailer->AltBody = $this->plaintext_message;
+		if ( ! empty( $this->html_content ) ) {
+			$phpmailer->AltBody = $this->plain_content;
+		}
 	}
 
 	/**
@@ -181,18 +183,24 @@ class WPSC_Email {
 	 * generating text content from HTML, setting default subjects, and calculating headers.
 	 */
 	private function prepare() {
+
 		// Set a default subject if none provided.
 		if ( empty( $this->subject ) ) {
 			$site_name = wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES );
 			$this->subject = __( 'Mail from ' . $site_name, 'wpsc' );
 		}
-		// $this->headers = 'From: "' . $from_name . '" <' . $from_email . ">\n"; // FIXME
-		$this->headers .= 'Content-Type: ' . $this->content_type;
+
+		$this->set_content_type();
 
 		// Generate a plain text part if we only have HTML.
 		if ( empty( $this->plain_content ) ) {
 			$this->html_to_plain_text();
 		}
+
+		// Set the content type.
+		$this->headers = 'From: "' . $this->from_name . '" <' . $this->from_address . ">\n"; // FIXME
+		$this->headers .= 'Content-Type: ' . $this->content_type;
+
 	}
 
 	/**
@@ -223,7 +231,7 @@ class WPSC_Email {
 		} else {
 			$content_type = 'text/plain';
 		}
-		$this->content_type = apply_filter( 'wpsc_email_content_type', $content_type, $this );
+		$this->content_type = apply_filters( 'wpsc_email_content_type', $content_type, $this );
 	}
 
 	// FIXME - will need to be better
