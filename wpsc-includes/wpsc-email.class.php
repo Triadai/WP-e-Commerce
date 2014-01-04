@@ -12,9 +12,9 @@ class WPSC_Email {
 	public $sent          = null;
 
 	// Publically settable via specific setter functions / API calls.
-	private $to           = array(); // @TODO
-	private $cc           = array(); // @TODO
-	private $bcc          = array(); // @TODO
+	private $to           = array();
+	private $cc           = array();
+	private $bcc          = array();
 
 	// Internal use only.
 	private $content_type;
@@ -151,8 +151,11 @@ class WPSC_Email {
 		return $email_sent;
 	}
 
+	/**
+	 * Add the plaintext fallback if required.
+	 * @param  PHPMailer  $phpmailer  The PHPMailer object.
+	 */
 	public function _action_phpmailer_init_multipart( $phpmailer ) {
-		// FIXME - Only if we have both?
 		if ( ! empty( $this->html_content ) ) {
 			$phpmailer->AltBody = $this->plain_content;
 		}
@@ -212,7 +215,7 @@ class WPSC_Email {
 	private function can_send() {
 
 		// Can't send if we don't have any to addresses.
-		if ( count($this->to) < 1 ) {
+		if ( count( $this->to ) < 1 ) {
 			return false;
 		}
 		// Can't send unless we have content.
@@ -224,7 +227,7 @@ class WPSC_Email {
 	}
 
 	/**
-	 *Determine the appropriate content type and add it to the headers
+	 * Determine the appropriate content type and add it to the headers
 	 */
 	private function set_content_type() {
 		if ( ! empty( $this->html_content ) ) {
@@ -235,7 +238,10 @@ class WPSC_Email {
 		$this->content_type = apply_filters( 'wpsc_email_content_type', $content_type, $this );
 	}
 
-	// FIXME - will need to be better
+	/**
+	 * Generate a plain text version of the HTML email.
+	 * @todo  - this will undoubtedly need improvement.
+	 */
 	private function html_to_plain_text() {
 		$this->plain_content = strip_tags( $this->html_content );
 	}

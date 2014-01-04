@@ -255,17 +255,14 @@ class WPSC_Email_TestCase extends WP_UnitTestCase {
 		$this->assertTrue( $this->email->sent );
 		$this->assertNotEmpty( $this->email->plain_content );
 		$this->assertEquals( 'This is a test.', $this->email->plain_content );
-
 		// @TODO - better tests on more complex content.
 	}
 
 	public function test_show_send_details() {
 		global $phpmailer;
-
 		$this->email->html_content = '<html><body>This is a test.</body></html>';
 		$this->email->add_to( 'joe@example.com' );
 		$result = $this->email->send();
-		print_r($phpmailer->mock_sent);
 	}
 
 }
