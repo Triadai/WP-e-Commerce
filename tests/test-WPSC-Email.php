@@ -233,17 +233,21 @@ class WPSC_Email_TestCase extends WP_UnitTestCase {
 	 */
 	public function test_auto_plain_text_generation() {
 
-		$email = new WPSC_Email();
-		$email->html_content = '<html><body>This is a test.</body></html>';
-		$email->add_to( 'joe@example.com' );
+		$this->email->html_content = '<html><body>This is a test.</body></html>';
+		$this->email->add_to( 'joe@example.com' );
 
-		$result = $email->send();
+		$result = $this->email->send();
 		$this->assertTrue( $result );
-		$this->assertTrue( $email->sent );
-		$this->assertNotEmpty( $email->plain_content );
-		$this->assertEquals( 'This is a test.', $email->plain_content );
+		$this->assertTrue( $this->email->sent );
+		$this->assertNotEmpty( $this->email->plain_content );
+		$this->assertEquals( 'This is a test.', $this->email->plain_content );
 
 		// @TODO - better tests on more complex content.
 	}
+
+	public function test_show_send_details() {
+
+	}
+
 }
 
