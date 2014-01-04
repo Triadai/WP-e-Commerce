@@ -132,13 +132,14 @@ class WPSC_Email {
 		do_action( 'wpsc_email_before_send', $this );
 
 		add_action( 'phpmailer_init', array( $this, '_action_phpmailer_init_multipart' ), 10, 1 );
-		add_filter( 'wp_mail_from', array( $this, 'get_from_address' ) );
-		add_filter( 'wp_mail_from_name', array( $this, 'get_from_name' ) );
-		add_filter( 'wp_mail_content_type', array( $this, 'get_content_type' ) );
-		$email_sent = wp_mail( $this->to, $this->subject, $this->html_content, $this->headers );
-		remove_filter( 'wp_mail_from', array( $this, 'get_from_address' ) );
-		remove_filter( 'wp_mail_from_name', array( $this, 'get_from_name' ) );
-		remove_filter( 'wp_mail_content_type', array( $this, 'get_content_type' ) );
+		// add_filter( 'wp_mail_from', array( $this, 'get_from_address' ) );
+		// add_filter( 'wp_mail_from_name', array( $this, 'get_from_name' ) );
+		// add_filter( 'wp_mail_content_type', array( $this, 'get_content_type' ) );
+		$content_property = !empty( $this->html_content ) ? 'html_content' : 'plain_content';
+		$email_sent = wp_mail( $this->to, $this->subject, $this->$content_property, $this->headers );
+		// remove_filter( 'wp_mail_from', array( $this, 'get_from_address' ) );
+		// remove_filter( 'wp_mail_from_name', array( $this, 'get_from_name' ) );
+		// remove_filter( 'wp_mail_content_type', array( $this, 'get_content_type' ) );
 		remove_action( 'phpmailer_init', array( $this, '_action_phpmailer_init_multipart' ), 10, 1 );
 
 		// Update the status to show the results of sending the email
