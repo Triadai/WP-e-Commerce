@@ -31,7 +31,6 @@ class WPSC_Email_TestCase extends WP_UnitTestCase {
 	 */
 	public function test_add_cc() {
 
-
 		// Basic single email addition.
 		$ccs = $this->email->add_cc( 'joe@example.com' );
 		$this->assertCount( 1, $this->email->cc );
@@ -77,7 +76,6 @@ class WPSC_Email_TestCase extends WP_UnitTestCase {
 	 */
 	public function test_add_bcc() {
 
-
 		$bccs = $this->email->add_bcc( 'joe@example.com' );
 		$this->assertCount( 1, $this->email->bcc );
 		$this->assertCount( 1, $bccs );
@@ -115,7 +113,6 @@ class WPSC_Email_TestCase extends WP_UnitTestCase {
 	 * Same as test_add_cc, but for "to" addresses.
 	 */
 	public function test_add_to() {
-
 
 		$tos = $this->email->add_to( 'joe@example.com' );
 		$this->assertCount( 1, $this->email->to );
@@ -159,6 +156,7 @@ class WPSC_Email_TestCase extends WP_UnitTestCase {
 	 */
 	public function test_can_send_email_validation() {
 
+		$this->email->subject = __FUNCTION__;
 		$this->email->plain_content = 'This is a test, please ignore.';
 
 		// Send with no to address specified.
@@ -185,6 +183,7 @@ class WPSC_Email_TestCase extends WP_UnitTestCase {
 	public function test_can_send_content_validation() {
 
 		$this->email->add_to( 'joe@example.com' );
+		$this->email->subject = __FUNCTION__;
 
 		// Send with no content - should fail.
 		$result = $this->email->send();
@@ -203,8 +202,8 @@ class WPSC_Email_TestCase extends WP_UnitTestCase {
 	 */
 	public function test_subject_generation() {
 
-		$this->email->html_content = '<html><body>This is a test.</body></html>';
 		$this->email->add_to( 'joe@example.com' );
+		$this->email->plain_content = 'This is a test.';
 		$result = $this->email->send();
 		$this->assertEquals( 'Mail from Test Blog', $this->email->subject );
 
@@ -216,8 +215,9 @@ class WPSC_Email_TestCase extends WP_UnitTestCase {
 	 */
 	public function test_default_from_address() {
 
-		$this->email->html_content = '<html><body>This is a test.</body></html>';
 		$this->email->add_to( 'joe@example.com' );
+		$this->email->subject = __FUNCTION__;
+		$this->email->html_content = '<html><body>This is a test.</body></html>';
 		$result = $this->email->send();
 		$this->assertTrue( $result );
 		$this->assertTrue( $this->email->sent );
@@ -229,8 +229,10 @@ class WPSC_Email_TestCase extends WP_UnitTestCase {
 	 * @TODO Test that the content type gets set correctly.
 	 */
 	public function test_content_type_generation_html() {
-		$this->email->html_content = '<html><body>This is a test.</body></html>';
+
 		$this->email->add_to( 'joe@example.com' );
+		$this->email->subject = __FUNCTION__;
+		$this->email->html_content = '<html><body>This is a test.</body></html>';
 		$result = $this->email->send();
 		$this->assertEquals( 'multipart/alternative', $this->email->content_type );
 		$this->assertContains( 'Content-Type: multipart/alternative', $this->email->headers );
@@ -248,8 +250,13 @@ class WPSC_Email_TestCase extends WP_UnitTestCase {
 	 * Test that the plain text content gets generated correctly.
 	 */
 	public function test_auto_plain_text_generation() {
-		$this->email->html_content = '<html><body>This is a test.</body></html>';
+
 		$this->email->add_to( 'joe@example.com' );
+		$this->email->subject = __FUNCTION__;
+		$this->email->html_content = <<<CONTENT
+		    <p id="first">This is a <strong>bold</strong> test. It includes some <em>emphasis</em>.</p>
+		    <p>Link <a href="http://wordpress.org">handling is important</a>. Even <a href="http://google.com/?arg=one&amp;arg2=two" rel="nofollow" target="_blank"><b>complicated</b> links</a>.</p>
+CONTENT;
 		$result = $this->email->send();
 		$this->assertTrue( $result );
 		$this->assertTrue( $this->email->sent );
@@ -260,8 +267,10 @@ class WPSC_Email_TestCase extends WP_UnitTestCase {
 
 	public function test_show_send_details() {
 		global $phpmailer;
-		$this->email->html_content = '<html><body>This is a test.</body></html>';
+
 		$this->email->add_to( 'joe@example.com' );
+		$this->email->subject = __FUNCTION__;
+		$this->email->html_content = '<html><body>This is a test.</body></html>';
 		$result = $this->email->send();
 	}
 
