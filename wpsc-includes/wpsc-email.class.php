@@ -8,8 +8,12 @@ class WPSC_Email {
 	public $subject       = '';
 	public $plain_content = '';
 	public $html_content  = '';
-	public $template_tag  = '';
-	public $sent          = null;
+
+	/**
+	 * @see  apply_template().
+	 */
+	public $template = null;
+	public $sent     = null;
 
 	// Publically settable via specific setter functions / API calls.
 	private $to           = array();
@@ -201,10 +205,82 @@ class WPSC_Email {
 			$this->html_to_plain_text();
 		}
 
+		// Parse into the selected templates
+		$this->apply_template();
+
 		// Set the content type.
 		$this->headers = 'From: "' . $this->from_name . '" <' . $this->from_address . ">\n"; // FIXME
 		$this->headers .= 'Content-Type: ' . $this->content_type;
 
+	}
+
+	/**
+	 * Retrieve a template fragment based on the format, postion, and
+	 * the $template property of the class.
+	 *
+	 * {theme_dir}/wpsc-{format}-email-{position}-{template}.php
+	 *
+	 * If template == null, use
+	 * {theme_dir}/wpsc-{format}-email-{position}.php
+	 */
+	private function get_template_part( $format, $position ) {
+
+		// Template is null to use the standard template
+		if ( $this->template === null ) {
+			$suffixes[] = '';
+		} else {
+			// If template isn't null, prefer a template specific one ...
+			$suffixes[] = '-'.(string)$this->template;
+			// ... but fall back to general if not found.
+			$suffixes[] = '';
+		}
+
+		$base_template = 'wpsc-' . $format . '-email-' . $position
+		;
+		foreach ( $suffixes as $suffix ) {
+			$path = wpsc_get_template_file_path();
+			// FIXME - check it exists, if so use it, but filter
+			// is_readable? WPSCs template loader?
+			$template_path = apply_filters( 'wpsc_email_template', $base_template . $suffix . '.php', $format, $position, $this );
+
+		}
+		return $template_path;
+	}
+
+	/**
+	 * If $this->template === false
+	 *     Then no templates are applied.
+	 * If $this->template === null
+	 *     The default template are used.
+	 * Otherwise
+	 *     The precise template will depend on the value of $this->template
+	 */
+	private function apply_template() {
+
+		// Set the template to false to leave content unaltered
+		if ( $this->template === false ) {
+			return;
+		}
+
+		// HTML
+		if ( !empty( $this->html_content ) ) {
+			ob_start();
+			$template_path = $this->get_template_part( 'html', 'header' );
+			include wpsc_get_template_file_path( $template_path );
+			echo $this->html_content;
+			$template_path = $this->get_template_part( 'html', 'footer' );
+			include wpsc_get_template_file_path( $template_path );
+			$this->html_content = ob_get_clean();
+		}
+
+		// Plain text
+		ob_start();
+		$template_path = $this->get_template_part( 'plain', 'header' );
+		include wpsc_get_template_file_path( $template_path );
+		echo $this->plain_content;
+		$template_path = $this->get_template_part( 'plain', 'footer' );
+		include wpsc_get_template_file_path( $template_path );
+		$this->plain_content = ob_get_clean();
 	}
 
 	/**
@@ -243,7 +319,46 @@ class WPSC_Email {
 	 * @todo  - this will undoubtedly need improvement.
 	 */
 	private function html_to_plain_text() {
-		$this->plain_content = strip_tags( $this->html_content );
+
+		// First parse the DOM to extract links to plain text
+		$fake_html = '<html><body><div id="fakedomwpec">';
+		$fake_html .= $this->html_content;
+		$fake_html .= '</div></body></html>';
+
+		$dom = new DomDocument();
+		$dom->recover = true;
+		$dom->strictErrorChecking = false;
+		libxml_use_internal_errors( true );
+		$dom->loadHTML( $fake_html );
+		$links = $dom->getElementsByTagName( 'a' );
+		foreach ( $links as $link ) {
+			$node_value = $link->nodeValue . ' ['.$link->getAttribute( 'href' ).']';
+			$link->nodeValue = (string)htmlentities( $node_value );
+		}
+
+		// Once we're on PHP 5.3.6 we could use $fake_container->saveHTML($dom->getElementById('fakedomwpec'))
+		// Until then , string replacements it is.
+		$plain_content = $dom->saveHTML();
+		$pos = stripos( $plain_content, 'fakedomwpec' );
+		$plain_content = substr( $plain_content, $pos + 13 );
+		$plain_content = str_replace( '</div></body></html>', '', $plain_content );
+
+		// Replace BRs with new lines
+		$plain_content = preg_replace( '/\<br(\s*)?\/?\>/i', "\n", $plain_content );
+		// Add a newline after every </p>
+		$plain_content = preg_replace( '/\<\/p(\s*)?\>/i', "\n", $plain_content );
+		// Now drop stylesheets.
+		$plain_content = preg_replace( '#<style(.*?)</style>#s', '', $plain_content );
+		// Now drop scripts.
+		$plain_content = preg_replace( '#<script(.*?)</script>#s', '', $plain_content );
+		// Strip tags.
+		$plain_content = strip_tags( $plain_content );
+		// Flatten whitespace.
+		$plain_content = preg_replace( '#[ \t][ \t]*#s', ' ', $plain_content );
+		$plain_content = preg_replace( '#\n[ \t]*#s', "\n", $plain_content );
+		$plain_content = trim( $plain_content );
+
+		$this->plain_content = $plain_content;
 	}
 
 }

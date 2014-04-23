@@ -217,7 +217,7 @@ class WPSC_Email_TestCase extends WP_UnitTestCase {
 
 		$this->email->add_to( 'joe@example.com' );
 		$this->email->subject = __FUNCTION__;
-		$this->email->html_content = '<html><body>This is a test.</body></html>';
+		$this->email->html_content = '<p>This <b>is</b> a test.</p>';
 		$result = $this->email->send();
 		$this->assertTrue( $result );
 		$this->assertTrue( $this->email->sent );
@@ -232,7 +232,7 @@ class WPSC_Email_TestCase extends WP_UnitTestCase {
 
 		$this->email->add_to( 'joe@example.com' );
 		$this->email->subject = __FUNCTION__;
-		$this->email->html_content = '<html><body>This is a test.</body></html>';
+		$this->email->html_content = '<p>This <b>is</b> a test.</p>';
 		$result = $this->email->send();
 		$this->assertEquals( 'multipart/alternative', $this->email->content_type );
 		$this->assertContains( 'Content-Type: multipart/alternative', $this->email->headers );
@@ -270,8 +270,9 @@ CONTENT;
 
 		$this->email->add_to( 'joe@example.com' );
 		$this->email->subject = __FUNCTION__;
-		$this->email->html_content = '<html><body>This is a test.</body></html>';
+		$this->email->html_content = '<p>This <b>is</b> a test.</p>';
 		$result = $this->email->send();
+		print_r($phpmailer->mock_sent,1);
 	}
 
 }
