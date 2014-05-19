@@ -3,6 +3,7 @@
 class WPSC_Email_TestCase extends WP_UnitTestCase {
 
 	private $email;
+	private $destination_email = 'joe@example.com';
 
 	public static function setUpBeforeClass() {
 		// Set the store config we need for these tests
@@ -32,13 +33,13 @@ class WPSC_Email_TestCase extends WP_UnitTestCase {
 	public function test_add_cc() {
 
 		// Basic single email addition.
-		$ccs = $this->email->add_cc( 'joe@example.com' );
+		$ccs = $this->email->add_cc( $this->destination_email );
 		$this->assertCount( 1, $this->email->cc );
 		$this->assertCount( 1, $ccs );
 		$this->assertEquals( $ccs, $this->email->cc );
 
 		// Check duplicates aren't added.
-		$ccs = $this->email->add_cc( 'joe@example.com' );
+		$ccs = $this->email->add_cc( $this->destination_email );
 		$this->assertCount( 1, $this->email->cc );
 		$this->assertCount( 1, $ccs );
 		$this->assertEquals( $ccs, $this->email->cc );
@@ -76,12 +77,12 @@ class WPSC_Email_TestCase extends WP_UnitTestCase {
 	 */
 	public function test_add_bcc() {
 
-		$bccs = $this->email->add_bcc( 'joe@example.com' );
+		$bccs = $this->email->add_bcc( $this->destination_email );
 		$this->assertCount( 1, $this->email->bcc );
 		$this->assertCount( 1, $bccs );
 		$this->assertEquals( $bccs, $this->email->bcc );
 
-		$bccs = $this->email->add_bcc( 'joe@example.com' );
+		$bccs = $this->email->add_bcc( $this->destination_email );
 		$this->assertCount( 1, $this->email->bcc );
 		$this->assertCount( 1, $bccs );
 		$this->assertEquals( $bccs, $this->email->bcc );
@@ -114,12 +115,12 @@ class WPSC_Email_TestCase extends WP_UnitTestCase {
 	 */
 	public function test_add_to() {
 
-		$tos = $this->email->add_to( 'joe@example.com' );
+		$tos = $this->email->add_to( $this->destination_email );
 		$this->assertCount( 1, $this->email->to );
 		$this->assertCount( 1, $tos );
 		$this->assertEquals( $tos, $this->email->to );
 
-		$tos = $this->email->add_to( 'joe@example.com' );
+		$tos = $this->email->add_to( $this->destination_email );
 		$this->assertCount( 1, $this->email->to );
 		$this->assertCount( 1, $tos );
 		$this->assertEquals( $tos, $this->email->to );
@@ -171,7 +172,7 @@ class WPSC_Email_TestCase extends WP_UnitTestCase {
 		$this->assertNull( $this->email->sent );
 
 		// Add a valid email, should now send.
-		$this->email->add_to( 'joe@example.com' );
+		$this->email->add_to( $this->destination_email );
 		$result = $this->email->send();
 		$this->assertTrue( $result );
 		$this->assertTrue( $this->email->sent );
@@ -182,7 +183,7 @@ class WPSC_Email_TestCase extends WP_UnitTestCase {
 	 */
 	public function test_can_send_content_validation() {
 
-		$this->email->add_to( 'joe@example.com' );
+		$this->email->add_to( $this->destination_email );
 		$this->email->subject = __FUNCTION__;
 
 		// Send with no content - should fail.
@@ -202,7 +203,7 @@ class WPSC_Email_TestCase extends WP_UnitTestCase {
 	 */
 	public function test_subject_generation() {
 
-		$this->email->add_to( 'joe@example.com' );
+		$this->email->add_to( $this->destination_email );
 		$this->email->plain_content = 'This is a test.';
 		$result = $this->email->send();
 		$this->assertEquals( 'Mail from Test Blog', $this->email->subject );
@@ -215,7 +216,7 @@ class WPSC_Email_TestCase extends WP_UnitTestCase {
 	 */
 	public function test_default_from_address() {
 
-		$this->email->add_to( 'joe@example.com' );
+		$this->email->add_to( $this->destination_email );
 		$this->email->subject = __FUNCTION__;
 		$this->email->html_content = '<p>This <b>is</b> a test.</p>';
 		$result = $this->email->send();
@@ -230,7 +231,7 @@ class WPSC_Email_TestCase extends WP_UnitTestCase {
 	 */
 	public function test_content_type_generation_html() {
 
-		$this->email->add_to( 'joe@example.com' );
+		$this->email->add_to( $this->destination_email );
 		$this->email->subject = __FUNCTION__;
 		$this->email->html_content = '<p>This <b>is</b> a test.</p>';
 		$result = $this->email->send();
@@ -240,7 +241,7 @@ class WPSC_Email_TestCase extends WP_UnitTestCase {
 
 	public function test_content_type_generation_plain() {
 		$this->email->plain_content = 'This is a test.';
-		$this->email->add_to( 'joe@example.com' );
+		$this->email->add_to( $this->destination_email );
 		$result = $this->email->send();
 		$this->assertEquals( 'text/plain', $this->email->content_type );
 		$this->assertContains( 'Content-Type: text/plain', $this->email->headers );
@@ -251,7 +252,7 @@ class WPSC_Email_TestCase extends WP_UnitTestCase {
 	 */
 	public function test_auto_plain_text_generation() {
 
-		$this->email->add_to( 'joe@example.com' );
+		$this->email->add_to( $this->destination_email );
 		$this->email->subject = __FUNCTION__;
 		$this->email->html_content = <<<CONTENT
 		    <p id="first">This is a <strong>bold</strong> test. It includes some <em>emphasis</em>.</p>
