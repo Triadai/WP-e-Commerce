@@ -757,7 +757,7 @@ body.outlook p {
                               <img src="http://placehold.it/200x50">
                             </td>
                             <td class="six sub-columns last" style="text-align:right; vertical-align:middle;">
-                              <span class="template-label">BASIC</span>
+                              <span class="template-label">Order information from %store%</span>
                             </td>
                             <td class="expander"></td>
                           </tr>
