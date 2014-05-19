@@ -261,19 +261,8 @@ CONTENT;
 		$this->assertTrue( $result );
 		$this->assertTrue( $this->email->sent );
 		$this->assertNotEmpty( $this->email->plain_content );
-		$this->assertEquals( 'This is a test.', $this->email->plain_content );
+		$this->assertEquals( "This is a bold test. It includes some emphasis.\n\nLink handling is important [http://wordpress.org]. Even complicated links [http://google.com/?arg=one&amp;arg2=two].", $this->email->plain_content );
 		// @TODO - better tests on more complex content.
 	}
 
-	public function test_show_send_details() {
-		global $phpmailer;
-
-		$this->email->add_to( 'joe@example.com' );
-		$this->email->subject = __FUNCTION__;
-		$this->email->html_content = '<p>This <b>is</b> a test.</p>';
-		$result = $this->email->send();
-		print_r($phpmailer->mock_sent,1);
-	}
-
 }
-
